@@ -2,13 +2,30 @@
   "name": "poolapi-v2",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon --exec babel-node src/app.js",
+    "test": "mocha --require @babel/register --require @babel/polyfill src/tests/test.js --timeout 5000 --exit"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "@babel/core": "^7.10.4",
+    "@babel/node": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.10.4",
+    "@babel/polyfill": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mocha": "^8.0.1",
+    "mongoose": "^5.9.23",
+    "mongoose-type-email": "^1.0.12",
+    "nodemon": "^2.0.4"
+  },
+  "devDependencies": {
+    "casual": "^1.6.2"
   }
 }
