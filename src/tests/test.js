@@ -82,7 +82,7 @@ describe('Auth', () => {
     })
 })
 
-
+//TODO: wrap all of these behind a token check
 describe('Users', () => {
     describe('GET', () => {
         //Get All Users
@@ -107,7 +107,7 @@ describe('Users', () => {
                 })
 
         })
-        //Get specific User record - positive
+        //Get specific User record by id - positive
         it('should get a user records', (done) => {    
             var user = new User({email: casual.email, hash: 'hash', salt: 'salt' });
             user.save((err, user) => {
@@ -122,26 +122,17 @@ describe('Users', () => {
             
 
         })
-        //Get specific User record - negative
-        it('should get a user records', (done) => {    
-            var user = new User({email: casual.email, hash: 'hash', salt: 'salt' });
-            user.save((err, user) => {
-                chai.request(app)
-                .get('/users/' + user._id.toString().replace('5', '6'))
-                .end((err,res) => {
-                    res.should.have.status(404);
-                    done();
-                })
-
-            });
-            
-
-        })
-        //Get User by email - positive
-
-        //Get User by email - negative
+        //Get specific User record by id - negative
+        it('should get a user record', (done) => {    
+            chai.request(app)
+            .get('/users/4f0b935e875985234360dc63')
+            .end((err,res) => {
+                res.should.have.status(404);
+                done();
+            })            
 
     })
+})
 
 
 })
