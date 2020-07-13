@@ -150,12 +150,12 @@ describe('Matches', () => {
                 .send({
                     playerOne: '5f0c11e5d33df528594e34c4',
                     playerTwo: '5f0c11e3d33df528594e34c2',
-                    started: Date.now()
                 })
                 .end((err,res) => {
                     res.should.have.status(200);
-                    res.body.should.have.property('_id');
-                    
+                    res.body.match.should.have.property('_id');
+                    res.body.match.should.have.property('started')
+                    done();
 
                 })
 
