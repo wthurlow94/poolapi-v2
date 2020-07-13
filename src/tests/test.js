@@ -2,43 +2,13 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../app';
 import casual from 'casual';
+import User from '../models/user.model'
 chai.use(chaiHttp);
 chai.should();
-
-describe('Users', () => {
-    describe('GET', () => {
-        //Get All Users
-        it('should get all user records', (done) => {
-            chai.request(app)
-                .get('/users')
-                .end((err, res) => {
-                    res.should.have.status(200);
-                    res.body.should.be.an('object');
-                    res.body.users.should.be.an('array');
-                    if(res.body.users.length > 0) {
-                        res.body.users.forEach(user => {
-                            user.should.have.property('elo');
-                            user.elo.should.be.a('number');
-
-                        });
-                    }
-                    done();
-
-                })
-
-        })
-        //Get specific User record - positive
-
-        //Get specific User record - negative
-
-    })
-})
-
 
 describe('Auth', () => {
     var email = casual.email;
     var password = casual.password;
-    console.log(email + password)
     describe('/register', () => {
         //successful signup
         
@@ -112,3 +82,66 @@ describe('Auth', () => {
     })
 })
 
+
+describe('Users', () => {
+    describe('GET', () => {
+        //Get All Users
+        it('should get all user records', (done) => {
+            chai.request(app)
+                .get('/users')
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.be.an('object');
+                    res.body.returnUsers.should.be.an('array');
+                    if(res.body.returnUsers.length > 0) {
+                        res.body.returnUsers.forEach(user => {
+                            user.should.have.property('elo');
+                            user.elo.should.be.a('number');
+                            user.should.not.have.property('hash');
+                            user.should.not.have.property('salt');
+
+                        });
+                    }
+                    done();
+
+                })
+
+        })
+        //Get specific User record - positive
+        it('should get a user records', (done) => {    
+            var user = new User({email: casual.email, hash: 'hash', salt: 'salt' });
+            user.save((err, user) => {
+                chai.request(app)
+                .get('/users/' + user._id)
+                .end((err,res) => {
+                    res.should.have.status(200);
+                    done();
+                })
+
+            });
+            
+
+        })
+        //Get specific User record - negative
+        it('should get a user records', (done) => {    
+            var user = new User({email: casual.email, hash: 'hash', salt: 'salt' });
+            user.save((err, user) => {
+                chai.request(app)
+                .get('/users/' + user._id.toString().replace('5', '6'))
+                .end((err,res) => {
+                    res.should.have.status(404);
+                    done();
+                })
+
+            });
+            
+
+        })
+        //Get User by email - positive
+
+        //Get User by email - negative
+
+    })
+
+
+})
