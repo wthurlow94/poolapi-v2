@@ -15,7 +15,7 @@ const matchSchema = mongoose.Schema({
         type: Date,
         required: true
     },
-    ended: {
+    resulted: {
         type: Date,
     },
     winner:{

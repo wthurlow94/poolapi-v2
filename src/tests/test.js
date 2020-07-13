@@ -3,8 +3,11 @@ import chaiHttp from 'chai-http';
 import app from '../app';
 import casual from 'casual';
 import User from '../models/user.model'
+import match from '../models/match.model'
 chai.use(chaiHttp);
 chai.should();
+
+let playerOne, playerTwo;
 
 describe('Auth', () => {
     var email = casual.email;
@@ -111,6 +114,7 @@ describe('Users', () => {
         it('should get a user records', (done) => {    
             var user = new User({email: casual.email, hash: 'hash', salt: 'salt' });
             user.save((err, user) => {
+                playerOne = user._id;
                 chai.request(app)
                 .get('/users/' + user._id)
                 .end((err,res) => {
@@ -138,28 +142,89 @@ describe('Users', () => {
 })
 
 
-
-
-
-
+let matchId;
 describe('Matches', () => {
+    
     describe('POST', () => {
-        it('should create a new match', (done) => {
-            chai.request(app)
-                .post('/matches')
-                .send({
-                    playerOne: '5f0c11e5d33df528594e34c4',
-                    playerTwo: '5f0c11e3d33df528594e34c2',
-                })
-                .end((err,res) => {
-                    res.should.have.status(200);
-                    res.body.match.should.have.property('_id');
-                    res.body.match.should.have.property('started')
-                    done();
+        describe('/match)',() => {
+            it('should create a new match', (done) => {
+                var user = new User({email: casual.email, hash: 'hash', salt: 'salt' });
+                user.save((err, user) => {
+                    playerTwo = user._id;
+                    chai.request(app)
+                        .post('/matches')
+                        .send({
+                            playerOne: playerOne,
+                            playerTwo: playerTwo,
+                        })
+                        .end((err,res) => {
+                            matchId = res.body.match._id;
+                            chai.expect(res).to.have.status(200);
+                            chai.expect(res.body.match).to.have.property('_id');
+                            chai.expect(res.body.match).to.have.property('started')
+                            done();
 
-                })
+                        })
+                    })
 
-        })
+            })
+
+            it('should not create a new match if either player does not exist', (done) => {
+                chai.request(app)
+                    .post('/matches')
+                    .send({
+                        playerOne: '6f0c11e5d33df528594e34c4',
+                        playerTwo: '6f0c11e3d33df528594e34c2',
+                    })
+                    .end((err,res) => {
+                        chai.expect(res).to.have.status(404);
+                        done();
+
+                    })
+
+             })
+
+            it('should not create a new match if an unresulted match exists between two users', (done) => {
+                chai.request(app)
+                    .post('/matches')
+                    .send({
+                        playerOne: playerOne,
+                        playerTwo: playerTwo,
+                    })
+                    .end((err,res) => {
+                        chai.expect(res).to.have.status(403);
+                        done();
+
+                    })
+
+            })
+
+     })
     })
+    describe('PATCH', () => {
+        describe('/matches/_id', () => {
+            //result a match
+            it('should result the match', (done) => {
+                chai.request(app)
+                    .patch('/matches/'+matchId)
+                    .send({winner: playerOne})
+                    .end((err,res) => {
+                        chai.expect(res).to.have.status(200);
+                        chai.expect(res.body.result).to.have.property('resulted');
+                        chai.expect(res.body.result).to.have.property('winner');
+                        done();
+                    });
+            });
+        })
+
+        //Cannot result a match that does not exist
+
+        //Cannot result a match that is already resulted
+
+        //Update Winner and Loser ELO scores
+
+    })
+
+    //describe Match Getters
 
 })

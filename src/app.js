@@ -10,7 +10,11 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use('/', routes);
 
-mongoose.connect(process.env.CONNECTION_URL, { useNewUrlParser: true});
+mongoose.connect(process.env.CONNECTION_URL,
+    { 
+        useUnifiedTopology: true,
+        useNewUrlParser: true
+    });
 var db = mongoose.connection;
 
 // Added check for DB connection

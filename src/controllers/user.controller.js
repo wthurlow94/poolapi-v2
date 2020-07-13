@@ -45,6 +45,12 @@ class UserController {
 
     }
 
+
+    static checkUserExists(id){
+         return User.exists({_id: id});
+
+    }
+
     static filterUserData(user){
         return {
                     _id: user._id,
