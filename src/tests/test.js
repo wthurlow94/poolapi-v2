@@ -136,3 +136,30 @@ describe('Users', () => {
 
 
 })
+
+
+
+
+
+
+describe('Matches', () => {
+    describe('POST', () => {
+        it('should create a new match', (done) => {
+            chai.request(app)
+                .post('/matches')
+                .send({
+                    playerOne: '5f0c11e5d33df528594e34c4',
+                    playerTwo: '5f0c11e3d33df528594e34c2',
+                    started: Date.now()
+                })
+                .end((err,res) => {
+                    res.should.have.status(200);
+                    res.body.should.have.property('_id');
+                    
+
+                })
+
+        })
+    })
+
+})
