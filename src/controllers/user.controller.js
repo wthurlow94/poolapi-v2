@@ -1,8 +1,8 @@
 import User from '../models/user.model'
+import AuthController from '../controllers/auth.controller'
 
 class UserController {
     static getAllUsers(req, res) {
-        
         User.find((err,users) => {
             if(err)
                 return res.status(500).json({
@@ -23,6 +23,8 @@ class UserController {
     }
 
     static getUserById(req,res) {
+
+
         User.findById(req.params._id, (err,user) => {
             if (err)
                 return res.status(500).json({

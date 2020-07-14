@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 
 class MatchController {
     static async createMatch(req,res){
+
+
         let p1exists = await UserController.checkUserExists(req.body.playerOne) 
         let p2exists = await UserController.checkUserExists(req.body.playerTwo) 
         if(!p1exists 
@@ -40,7 +42,56 @@ class MatchController {
 
     }
 
+    static getAllMatches(req,res){
+
+        Match.find((err,matches) => {
+            if (err)
+                return res.status(500).json({
+                    message: 'Error Received: ' + err
+                })
+            return res.status(200).json({
+                matches,
+                message: 'All matches retrieved'
+            })
+
+        })
+
+    }
+
+
+
+
+    static getMatchById(req,res) {
+
+
+        Match.findById(req.params.id, (err,match) => {
+            if (err)
+                return res.status(500).json({
+                    message: "Error received" + err
+                })
+
+            if (match == null)
+                return res.status(404).json({
+                    message: "Match does not exist"
+                })              
+             
+
+            return res.status(200).json({
+                match,
+                message: "Match returned"
+            })
+
+        })
+
+    }
+
+
+
+
     static async resultMatch(req,res){
+
+
+
         let match = await Match.findById(req.params.id);
         
         if(match == null){
