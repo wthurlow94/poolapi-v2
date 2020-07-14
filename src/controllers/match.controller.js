@@ -1,5 +1,7 @@
 import Match from '../models/match.model'
 import UserController from '../controllers/user.controller'
+import User from '../models/user.model';
+import mongoose from 'mongoose';
 
 class MatchController {
     static async createMatch(req,res){
@@ -40,19 +42,73 @@ class MatchController {
 
     static async resultMatch(req,res){
         let match = await Match.findById(req.params.id);
+        
+        if(match == null){
+            return res.status(404).json({
+                message: 'Match does not exist'
+            })
+        }
+
+        let winner = await User.findById(req.body.winner);
+
+        if (winner == null){
+            return res.status(403).json({
+                message: 'Provided winner ID does not exist'
+            })
+        }
+        
+        let loser;
+        switch (req.body.winner.toString()) {
+                case match.playerOne.toString(): {
+                    loser = match.playerTwo
+                    break;
+                }
+                case match.playerTwo.toString(): {
+                    loser = match.playerOne
+                    break;
+                }
+                default :
+                return res.status(403).json({
+                    message: 'Provided Winner is not part of this match'
+                })
+            }
+
+
         match.winner = req.body.winner;
         match.resulted = Date.now();
 
-        match.save((err,result) => {
-            if (err)
-                return res.status(500).json({
-                    message: 'Error received: ' + err
-                })
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        try {
+            const opts = { session, new: true, validateBeforeSave: false};
+
+            let matchDoc = await match.save(opts,(err,match) => {
+                if (err)
+                    return res.status(500).json({
+                        message: 'Error received: ' + err
+                    })
+                return match
+            });
+            
+            let result = await UserController.updateRanking(match.winner,loser,opts)
+
+            await session.commitTransaction();
+            session.endSession();
+
+            result.match = match
             return res.status(200).json({
                 result,
-                message: 'Match Resulted!'
+                message: 'Match resulted and ELOs updated'
             })
-        });
+
+           
+        } catch (err) {
+            await session.abortTransaction();
+            session.endSession();
+            res.status(500).json({
+                message: 'Error Received: ' + err
+            })
+        }
     }
 
 

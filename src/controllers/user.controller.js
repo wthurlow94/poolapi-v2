@@ -45,6 +45,43 @@ class UserController {
 
     }
 
+    static async updateRanking(winner, loser, opts) {
+        var expectedScoreWinner, expectedScoreLoser, newScoreWinner, newScoreLoser;
+
+        let Winner = await User.findById(winner,{}, opts);
+        let Loser  = await User.findById(loser,{}, opts);
+
+        expectedScoreWinner = 1 / (1 + (10 ^ ((Loser.elo - Winner.elo) / 400)));
+        expectedScoreLoser  = 1 / (1 + (10 ^ ((Winner.elo - Loser.elo) / 400)));
+
+        newScoreWinner      = Math.floor(Winner.elo + (32 * ( 1 - expectedScoreWinner )))
+        newScoreLoser       = Math.floor(Loser.elo  + (32 * ( 0 - expectedScoreLoser  )))
+
+        
+
+
+        let winnerOldElo = Winner.elo;
+        let loserOldElo  = Loser.elo;
+        Winner.elo = newScoreWinner;
+        Loser.elo  = newScoreLoser;
+
+        await Winner.save(opts);
+        await Loser.save(opts);
+
+        return {winner: {
+                    _id: Winner._id,
+                    oldElo: winnerOldElo,
+                    newElo: Winner.elo
+                },
+                loser: {
+                    _id: Loser._id,
+                    oldElo: loserOldElo,
+                    newElo: Loser.elo
+                }
+        }
+
+    }
+
 
     static checkUserExists(id){
          return User.exists({_id: id});
