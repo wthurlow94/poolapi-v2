@@ -42,7 +42,6 @@ class AuthController {
                 });
             return user
         });
-
         //validate password
 
         if (user === null || !AuthController.validateHash(user.salt, user.hash, req.body.password))
@@ -55,6 +54,10 @@ class AuthController {
 
 
         return res.status(200).json({
+            user:{_id: user._id,
+              email: user.email,
+              elo: user.elo  
+            },
             token,
             message: "User logged in"
         })

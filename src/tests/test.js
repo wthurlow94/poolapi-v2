@@ -3,9 +3,7 @@ import chaiHttp from 'chai-http';
 import app from '../app';
 import casual from 'casual';
 import User from '../models/user.model'
-import jwt from 'jsonwebtoken'
-import match from '../models/match.model'
-import AuthController from '../controllers/auth.controller';
+
 chai.use(chaiHttp);
 chai.should();
 
@@ -152,9 +150,9 @@ describe('Users', () => {
                 .end((err, res) => {
                     res.should.have.status(200);
                     res.body.should.be.an('object');
-                    res.body.returnUsers.should.be.an('array');
-                    if (res.body.returnUsers.length > 0) {
-                        res.body.returnUsers.forEach(user => {
+                    res.body.users.should.be.an('array');
+                    if (res.body.users.length > 0) {
+                        res.body.users.forEach(user => {
                             user.should.have.property('elo');
                             user.elo.should.be.a('number');
                             user.should.not.have.property('hash');
@@ -167,6 +165,8 @@ describe('Users', () => {
                 })
 
         })
+
+
         //Get specific User record by id - positive
         it('should get a user records', (done) => {
             var user = new User({ email: casual.email, hash: 'hash', salt: 'salt' });
@@ -350,9 +350,28 @@ describe('Matches', () => {
                     })
             })
 
-            // Get individual match
+           it('should get all matches that a user is part of', (done) => {
 
-            // Get individual match for invalid ID
+            chai.request(app)
+                .get('/matches?playerOne='+playerOne+'&playerTwo='+playerOne)
+                .set('Authorization', 'Bearer ' + token)
+                .end((err,res) => {
+                    res.should.have.status(200);
+                    res.body.matches.should.be.an('array');
+
+                    res.body.matches.forEach(match => {
+                        match.should.have.property('playerOne');
+                        match.should.have.property('playerTwo');
+                        match.should.have.property('started');
+                        matchId = match._id;
+
+                    });
+
+
+                    done();
+                })
+
+           })
 
 
         })
@@ -363,6 +382,17 @@ describe('Matches', () => {
                     .set('Authorization', 'Bearer ' + token)
                     .end((err,res) => {
                         res.should.have.status(200);
+                        done();
+                    })
+
+            })
+
+            it('should not return a match for an invalid id', (done) => {
+                chai.request(app)
+                    .get('/matches/' + '4f0b935e875985234360dc63')
+                    .set('Authorization', 'Bearer ' + token)
+                    .end((err,res) => {
+                        res.should.have.status(404);
                         done();
                     })
 

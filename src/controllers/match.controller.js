@@ -7,6 +7,7 @@ class MatchController {
     static async createMatch(req,res){
 
 
+
         let p1exists = await UserController.checkUserExists(req.body.playerOne) 
         let p2exists = await UserController.checkUserExists(req.body.playerTwo) 
         if(!p1exists 
@@ -33,18 +34,45 @@ class MatchController {
                 return res.status(500).json({
                     message: 'Error received: ' + err 
                 });
-            return res.status(200).json({
-                match,
-                message: 'New Match Created'
-            })
+
+                Match.populate(match, [{path: 'playerOne', select: 'elo email'}, 
+                    {path: 'playerTwo', select: 'elo email'}], (err, match) => {
+                        return res.status(200).json({
+                            match,
+                            message: 'New Match Created'
+                        })
+                    })
+
+
+            
         })
 
 
     }
 
     static getAllMatches(req,res){
+        
+        var query;
+        if (req.query.playerOne == req.query.playerTwo & req.query.playerOne != undefined){
+            query = {$or: [
+                    {playerOne: req.query.playerOne},
+                    {playerTwo: req.query.playerTwo}
+            ]}
+        } else {
+           
+            query = req.query
+            
+        }
 
-        Match.find((err,matches) => {
+
+        Match.find(query,{},{populate: [{
+            path: 'playerOne', select: 'elo email'}, 
+            {path: 'playerTwo', select: 'elo email'},
+            {path: 'winner', select: 'elo email'}],
+            sort:{started : 'descending'}
+            
+        },
+             (err,matches) => {
             if (err)
                 return res.status(500).json({
                     message: 'Error Received: ' + err
@@ -138,9 +166,11 @@ class MatchController {
                     return res.status(500).json({
                         message: 'Error received: ' + err
                     })
-                return match
+                    return match
+
+
+
             });
-            
             let result = await UserController.updateRanking(match.winner,loser,opts)
 
             await session.commitTransaction();

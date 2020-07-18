@@ -2,12 +2,16 @@ import express from 'express';
 import bodyParser from 'body-parser'
 import routes from './routes/index';
 import mongoose from 'mongoose';
+import cors from 'cors';
 import 'dotenv/config'
+
 const app = express();
 
 const port = process.env.PORT || 8000;
+
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(cors())
 app.use('/', routes);
 
 mongoose.connect(process.env.CONNECTION_URL,

@@ -3,20 +3,15 @@ import AuthController from '../controllers/auth.controller'
 
 class UserController {
     static getAllUsers(req, res) {
-        User.find((err,users) => {
+        User.find({},'_id elo email', {}, (err,users) => {
             if(err)
                 return res.status(500).json({
                     message: "Error Received " + err
                 });
-            var returnUsers = [];
-            users.forEach((user) => {
-                var restrictedUser = UserController.filterUserData(user);
-                returnUsers.push(restrictedUser)
-
-            })
+           
 
             return res.status(200).json({
-                returnUsers,
+                users,
                 message: (users.length == 0) ? "No users exist in db" : "All Users returned"
             });
         });
@@ -25,7 +20,7 @@ class UserController {
     static getUserById(req,res) {
 
 
-        User.findById(req.params._id, (err,user) => {
+        User.findById(req.params._id,'_id elo email',{}, (err,user) => {
             if (err)
                 return res.status(500).json({
                     message: "Error received" + err
@@ -36,10 +31,10 @@ class UserController {
                     message: "User does not exist"
                 })              
              
-            var returnUser = UserController.filterUserData(user);
+            
 
             return res.status(200).json({
-                returnUser,
+                user,
                 message: "User returned"
             })
 
